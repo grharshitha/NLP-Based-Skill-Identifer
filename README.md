@@ -50,3 +50,59 @@ Create a virtual environment (recommended), then install the dependencies:
 
 pip install -r requirements.txt
 
+
+3. **Download and place the transformer model**
+
+- Download the model from Google Drive:  
+  [https://drive.google.com/drive/folders/1YA9UIN6InLSZ9H1YSUMcbKosUr3Rb0Cp?usp=sharing](https://drive.google.com/drive/folders/1YA9UIN6InLSZ9H1YSUMcbKosUr3Rb0Cp?usp=sharing)  
+- Unzip / place `model-best` under `models/tf_skill_ner_model_8k_clean/model-best`
+
+4. **Open the notebook**
+
+
+5. **Adjust base path if needed**
+
+In the notebook:
+
+6. **Run all cells**
+
+- Load `.spacy` corpora from `data/`  
+- Train or reload the NER pipelines from `models/`  
+- Reproduce evaluation metrics and visualizations  
+- Launch the Gradio demo from within the notebook  
+
+## Using the Trained Models in Python
+
+Once the models are in place, you can load and run them directly:
+
+## Gradio Demo
+
+The notebook includes a minimal Gradio interface:
+
+This UI lets users paste a job description, runs the transformer‑based NER model under the hood, and displays the extracted skills.
+
+## Results
+
+On the 500‑example dev set:
+
+- **Transformer (RoBERTa)**
+  - Precision ≈ 48.56%  
+  - Recall ≈ 36.81%  
+  - F1 ≈ 41.87%  
+
+- **Tok2Vec baseline**
+  - Precision ≈ 43.55%  
+  - Recall ≈ 19.59%  
+  - F1 ≈ 27.03%  
+
+The transformer nearly doubles recall while maintaining strong precision, leading to an improvement of about 15 F1 points over the Tok2Vec baseline.
+
+## Notes
+
+- The corpora in `data/` are provided as spaCy binaries instead of raw job text to avoid redistributing full job postings.  
+- Large, full‑scale datasets used to build these corpora are not included.  
+- The full transformer model weights are hosted externally on Google Drive due to GitHub’s 100 MB file size limit.
+
+
+
+
