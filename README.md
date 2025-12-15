@@ -1,157 +1,52 @@
 # Job Description Skill Extractor
 
-Automated NLP system that extracts skill entities from raw job descriptions using Named Entity Recognition (NER). The project compares a lightweight Tok2Vec‑based model with a RoBERTa transformer model, and exposes the final model through a Gradio demo for interactive testing. 
+Automated NLP system that extracts skill entities from raw job descriptions using Named Entity Recognition (NER). The project compares a lightweight Tok2Vec‑based model with a RoBERTa transformer model and exposes the final model through a Gradio demo for interactive testing.
 
-## Project Overview
+## Overview
 
-Recruiters and job seekers deal with long, unstructured job postings that mix responsibilities, benefits, and requirements. This project turns those texts into structured skill lists by training NER models on annotated job descriptions. 
+Recruiters and job seekers deal with long, unstructured job postings that mix responsibilities, benefits, and requirements. This project turns those texts into structured skill lists by training NER models on annotated job descriptions. Two architectures are implemented and evaluated:
 
-Two architectures are implemented and evaluated:
+- **Tok2Vec‑based NER** – a spaCy baseline with a lightweight encoder  
+- **Transformer‑based NER (RoBERTa)** – a contextual model using `spacy-transformers`  
 
-- **Tok2Vec‑based NER** – a spaCy baseline with a lightweight encoder. 
-- **Transformer‑based NER (RoBERTa)** – a contextual model using `spacy-transformers`.  
+On a held‑out dev set of 500 examples, the transformer achieves higher recall and a ~15‑point F1 improvement over the Tok2Vec baseline.
 
-On a held‑out dev set of 500 examples, the transformer achieves higher recall and a ~15‑point F1 improvement over the Tok2Vec baseline. 
+## Model Download
 
-## Repository Structure
+The main transformer model is larger than GitHub’s per‑file size limit, so it is distributed via Google Drive instead of being stored directly in this repository.  
 
-.
-├─ data/
-│ ├─ skill_ner_weak_train_clean.spacy # weakly labeled training data
-│ ├─ skill_ner_train_8k_clean.spacy # main 8k training set
-│ └─ skill_ner_dev_500_clean.spacy # 500-example dev set
-├─ models/
-│ ├─ tf_skill_ner_model_8k_clean/ # trained transformer NER model
-│ └─ output_tok2vec/ # trained Tok2Vec NER model
-├─ code file.ipynb # main Colab notebook
-├─ requirements.txt
-└─ README.md
+Download the trained transformer model here:
+
+**[Download transformer model from Google Drive](https://drive.google.com/drive/folders/1YA9UIN6InLSZ9H1YSUMcbKosUr3Rb0Cp?usp=sharing)**
+
+After downloading, place the `model-best` directory at:
 
 
-The `.spacy` files are spaCy binary docs containing annotated job descriptions with `SKILL` entities. 
+## Data and Models
 
-## Key Components
+- **Data**
+  - Job postings collected from LinkedIn and related sources  
+  - Cleaned and merged into train / dev corpora stored as `.spacy` binaries with `SKILL` entity annotations  
 
-- **Data**  
-  - Job postings collected from LinkedIn and related sources.  
-  - Cleaned and merged into train / dev corpora stored as `.spacy` files.   
+- **Models**
+  - `output_tok2vec/`: spaCy NER pipeline with `tok2vec` + `ner`  
+  - `tf_skill_ner_model_8k_clean/`: spaCy transformer pipeline using a RoBERTa encoder + NER head (weights downloaded separately as described above)
 
-- **Models**  
-  - `output_tok2vec/`: spaCy NER pipeline with `tok2vec` + `ner`.  
-  - `tf_skill_ner_model_8k_clean/`: spaCy transformer pipeline using RoBERTa encoder + NER head. 
+## Notebook and Workflow
 
-- **Notebook (`job_skills_-4.ipynb`)**  
-  - Data loading and inspection.  
-  - Converting CSV data to spaCy format.  
-  - Training Tok2Vec and transformer models.  
-  - Evaluation (precision, recall, F1) on the 500‑example dev set.  
-  - Visualizations: skills‑per‑job histogram, model metric bar chart. 
+The main notebook (`code file.ipynb`) walks through the full pipeline:
 
-- **Demo (Gradio, in notebook)**  
-  - Simple text box where users paste a job description.  
-  - Backend runs the best NER model and returns extracted skills. 
+- Loading and inspecting job description data  
+- Converting CSV data to spaCy `.spacy` format  
+- Training Tok2Vec and transformer NER models  
+- Evaluating on a 500‑example dev set (precision, recall, F1)  
+- Plotting skills‑per‑job distributions and model metrics  
+
+The notebook also contains a simple **Gradio demo** that lets you paste a job description and see the extracted skills in real time.
 
 ## Installation
 
-Create a virtual environment (recommended), then install dependencies:
+Create a virtual environment (recommended), then install the dependencies:
 
 pip install -r requirements.txt
 
-
-Download any spaCy transformer model you reference in the config (if not already included):
-
-python -m spacy download en_core_web_trf
-
-
-
-## Running the Notebook Locally
-
-1. Clone the repository and move into it:
-
-git clone https://github.com/<your-username>/nlp-skill-extractor.git
-cd nlp-skill-extractor
-
-
-
-2. Install requirements as above.
-
-3. Open the notebook:
-
-jupyter notebook code file.ipynb
-
-
-4. In the notebook, update any paths if needed so they point to:
-
-base_path = "./" # or the correct local path
-
-text
-
-5. Run the cells in order to:
-   - Load `.spacy` corpora from `data/`.  
-   - Train or reload the NER pipelines from `models/`.  
-   - Reproduce evaluation metrics and plots.
-
-## Using the Trained Models
-
-You can load the provided models directly in Python:
-
-import spacy
-
-tok2vec_nlp = spacy.load("models/output_tok2vec")
-tf_nlp = spacy.load("models/tf_skill_ner_model_8k_clean/model-best")
-
-text = "We are looking for a Software Engineer with strong Python, SQL, and AWS experience."
-doc = tf_nlp(text)
-skills = [ent.text for ent in doc.ents if ent.label_ == "SKILL"]
-print(skills)
-
-text
-
-## Gradio Demo (Interactive UI)
-
-Inside the notebook there is a Gradio interface that:
-
-- Takes a job description as input.  
-- Runs the transformer‑based NER model.  
-- Displays the list of extracted skills 
-
-Typical structure:
-
-import gradio as gr
-import spacy
-
-nlp = spacy.load("models/tf_skill_ner_model_8k_clean/model-best")
-
-def extract_skills(text):
-doc = nlp(text)
-return ", ".join(sorted({ent.text for ent in doc.ents if ent.label_ == "SKILL"}))
-
-demo = gr.Interface(
-fn=extract_skills,
-inputs=gr.Textbox(lines=8, label="Job Description"),
-outputs=gr.Textbox(label="Extracted Skills"),
-title="Job Description Skill Extractor"
-)
-demo.launch()
-
-
-## Results (Summary)
-
-On the 500‑example dev set: 
-
-- **Transformer (RoBERTa)**  
-  - Precision ≈ 48.56%  
-  - Recall ≈ 36.81%  
-  - F1 ≈ 41.87%  
-
-- **Tok2Vec baseline**  
-  - Precision ≈ 43.55%  
-  - Recall ≈ 19.59%  
-  - F1 ≈ 27.03%  
-
-The transformer nearly doubles recall while keeping precision strong, leading to a ~15‑point F1 improvement over Tok2Vec. 
-
-## Notes
-
-- The training corpora in `data/` are provided as spaCy binaries rather than raw text to avoid sharing full source job postings. 
-- Large, full‑scale datasets used to construct these corpora are not included in the repository. 
