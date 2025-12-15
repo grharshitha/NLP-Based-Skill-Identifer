@@ -1,0 +1,6 @@
+# Ignore big model checkpoints
+models/**/model-last/
+
+# Ignore temporary files
+*.log
+*.tmp
