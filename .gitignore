@@ -4,3 +4,5 @@ models/**/model-last/
 # Ignore temporary files
 *.log
 *.tmp
+
+models/tf_skill_ner_model_8k_clean/model-best/transformer/model
